@@ -1,101 +1,156 @@
-import Image from "next/image";
+"use client"
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ChevronRightIcon } from "@radix-ui/react-icons"
 
-export default function Home() {
+export default function MaxSubarraySolver() {
+  const [input, setInput] = useState('')
+  const [result, setResult] = useState(null)
+  const [steps, setSteps] = useState([])
+
+  const solveMaxSubarray = (arr) => {
+    if (arr.length === 0) return { sum: 0, subarray: [], start: 0, end: 0 }
+
+    let maxSum = arr[0]
+    let currentSum = arr[0]
+    let start = 0
+    let end = 0
+    let tempStart = 0
+    const newSteps = []
+
+    newSteps.push(`Initialize: maxSum = ${maxSum}, currentSum = ${currentSum}`)
+
+    for (let i = 1; i < arr.length; i++) {
+      newSteps.push(`Considering element at index ${i}: ${arr[i]}`)
+
+      // Update the current sum: either extend the current subarray or start a new one
+      if (currentSum + arr[i] > arr[i]) {
+        currentSum += arr[i]
+        newSteps.push(`Extended current subarray. Current sum: ${currentSum}`)
+      } else {
+        currentSum = arr[i]
+        tempStart = i
+        newSteps.push(`Started new subarray at index ${i}. Current sum: ${currentSum}`)
+      }
+
+      // Check if we have found a new maximum sum
+      if (currentSum > maxSum) {
+        maxSum = currentSum
+        start = tempStart
+        end = i
+        newSteps.push(`New maximum sum found: ${maxSum}, from index ${start} to ${end}`)
+      } else {
+        newSteps.push(`No new maximum. Current max sum remains: ${maxSum}`)
+      }
+    }
+
+    setSteps(newSteps)
+    return { sum: maxSum, subarray: arr.slice(start, end + 1), start, end }
+  }
+
+  const handleSolve = () => {
+    try {
+      const arr = JSON.parse(input)
+      if (!Array.isArray(arr) || arr.some(item => typeof item !== 'number')) {
+        throw new Error("Invalid input. Please enter an array of numbers.")
+      }
+      const solution = solveMaxSubarray(arr)
+      setResult(solution)
+    } catch (error) {
+      alert(error.message)
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-gray-900 text-gray-300 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <div className="max-w-4xl w-full space-y-8">
+        <motion.h1 
+          className="text-5xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Maximum Subarray Solver
+        </motion.h1>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="bg-gray-800 border-gray-700 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-2xl text-gray-100">Input Array</CardTitle>
+              <CardDescription className="text-gray-400">Enter an array of numbers (e.g., [-2, 1, -3, 4, -1, 2, 1, -5, 4])</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex space-x-2">
+                <Input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="[-2, 1, -3, 4, -1, 2, 1, -5, 4]"
+                  className="bg-gray-700 text-gray-100 border-gray-600 focus:ring-purple-500 focus:border-purple-500"
+                />
+                <Button onClick={handleSolve} className="bg-purple-600 hover:bg-purple-700 text-white">
+                  Solve
+                  <ChevronRightIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        {steps.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <Card className="bg-gray-800 border-gray-700 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl text-gray-100">Algorithm Steps</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="space-y-2">
+                  {steps.map((step, index) => (
+                    <motion.li 
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="bg-gray-700 p-3 rounded-lg text-gray-300"
+                    >
+                      {step}
+                    </motion.li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {result && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <Card className="bg-gray-800 border-gray-700 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl text-gray-100">Result</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl mb-4">Maximum Sum: <span className="font-bold text-purple-400">{result.sum}</span></p>
+                <p className="text-2xl mb-4">Subarray: <span className="font-bold text-pink-400">[{result.subarray.join(", ")}]</span></p>
+                <p className="text-xl">Indices: <span className="font-bold text-green-400">{result.start} to {result.end}</span></p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </div>
     </div>
-  );
+  )
 }
